@@ -93,9 +93,6 @@ public enum ThemeManager {
     public static final int STATE_MISSING_TARGET = (SDK_INT >= O) ? 0 : 1;
     public static final int STATE_DISABLED = (SDK_INT >= O) ? 2 : 4;
     public static final int STATE_ENABLED = (SDK_INT >= O) ? 3 : 5;
-    private static final String enableOverlay = "cmd overlay enable";
-    private static final String listAllOverlays = "cmd overlay list";
-    private static final String setPriority = "cmd overlay set-priority";
     private static final String[] blacklistedPackages = {
             INTERFACER_PACKAGE,
     };
@@ -179,24 +176,6 @@ public enum ThemeManager {
                                 Toast.LENGTH_LONG).show()
                 );
             }
-        } else {
-            StringBuilder commands = new StringBuilder(enableOverlay + ' ' + overlays.get(0));
-            for (int i = 1; i < overlays.size(); i++) {
-                commands.append(';' + enableOverlay + ' ').append(overlays.get(i));
-            }
-            ElevatedCommands.runThreadedCommand(commands.toString());
-            try {
-                Thread.sleep(NI_restartSystemUIDelay);
-                if (shouldRestartUI(context, overlays)) {
-                    if (optInFromUIRestart(context)) {
-                        restartSystemUI(context);
-                    } else {
-                        killSystemUINotificationsOnStockOreo(context);
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -227,25 +206,6 @@ public enum ThemeManager {
                                 Toast.LENGTH_LONG).show()
                 );
             }
-        } else {
-            StringBuilder commands = new StringBuilder(disableOverlay + ' ' + overlays.get
-                    (0));
-            for (int i = 1; i < overlays.size(); i++) {
-                commands.append(';' + disableOverlay + ' ').append(overlays.get(i));
-            }
-            ElevatedCommands.runThreadedCommand(commands.toString());
-            try {
-                Thread.sleep(NI_restartSystemUIDelay);
-                if (shouldRestartUI(context, overlays)) {
-                    if (optInFromUIRestart(context)) {
-                        restartSystemUI(context);
-                    } else {
-                        killSystemUINotificationsOnStockOreo(context);
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -270,22 +230,6 @@ public enum ThemeManager {
                                 context.getString(R.string.toast_andromeda_timed_out),
                                 Toast.LENGTH_LONG).show()
                 );
-            }
-        } else {
-            StringBuilder commands = new StringBuilder();
-            for (int i = 0; i < (overlays.size() - 1); i++) {
-                String packageName = overlays.get(i);
-                String parentName = overlays.get(i + 1);
-                commands.append((commands.length() == 0) ? "" : " && ").append(setPriority)
-                        .append(' ').append(packageName).append(' ').append(parentName);
-            }
-            ElevatedCommands.runThreadedCommand(commands.toString());
-            if (shouldRestartUI(context, overlays)) {
-                if (optInFromUIRestart(context)) {
-                    restartSystemUI(context);
-                } else {
-                    killSystemUINotificationsOnStockOreo(context);
-                }
             }
         }
     }
@@ -514,12 +458,6 @@ public enum ThemeManager {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                    }
-                } else {
-                    try {
-                        arrList = Root.runCommand(listAllOverlays)
-                                .split(System.getProperty("line.separator"));
-                    } catch (NullPointerException ignored) {
                     }
                 }
                 switch (secondaryState) {
